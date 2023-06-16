@@ -1,0 +1,19 @@
+name: sdcore-webui
+base: ubuntu:22.04
+version: '1.3'
+summary: SD-Core webui
+description: SD-Core webui
+license: Apache-2.0
+platforms:
+  amd64:
+
+parts:
+  webui:
+    plugin: go
+    source: https://github.com/ghislainbourgeois/webconsole.git
+    source-type: git
+    source-branch: add-missing-gets
+    build-snaps:
+      - go/1.18/stable
+    organize:
+      bin/cmd: bin/webui
