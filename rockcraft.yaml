@@ -1,5 +1,6 @@
 name: sdcore-webui
-base: ubuntu:22.04
+base: bare
+build-base: ubuntu:22.04
 version: '1.3'
 summary: SD-Core webui
 description: SD-Core webui
@@ -15,5 +16,7 @@ parts:
     source-branch: add-missing-gets
     build-snaps:
       - go/1.18/stable
+    stage-packages:
+      - libc6_libs
     organize:
       bin/cmd: bin/webui
