@@ -7,10 +7,14 @@ on:
 
 jobs:
 
-  build:
-    uses: ./.github/workflows/build.yaml
+  build-rock:
+    uses: canonical/sdcore-github-workflows/.github/workflows/build-rock.yaml@main
 
-  publish:
+  scan-rock:
+    needs: build-rock
+    uses: canonical/sdcore-github-workflows/.github/workflows/scan-rock.yaml@main
+
+  publish-rock:
     if: github.ref_name == 'main'
-    needs: build
-    uses: ./.github/workflows/publish.yaml
+    needs: scan-rock
+    uses: canonical/sdcore-github-workflows/.github/workflows/publish-rock.yaml@main
