@@ -15,7 +15,7 @@ parts:
     source-type: git
     source-branch: add-missing-gets
     build-snaps:
-      - go/1.18/stable
+      - go/1.21/stable
     stage-packages:
       - libc6_libs
     organize:
