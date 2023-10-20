@@ -11,9 +11,9 @@ platforms:
 parts:
   webui:
     plugin: go
-    source: https://github.com/ghislainbourgeois/webconsole.git
+    source: https://github.com/omec-project/webconsole.git
     source-type: git
-    source-branch: add-missing-gets
+    source-commit: a21ec74683b7c1acf05366575f19c4102c54b9a2
     build-snaps:
       - go/1.21/stable
     stage-packages:
