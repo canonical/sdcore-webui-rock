@@ -1,0 +1,133 @@
+diff --git a/configapi/api_sub_config.go b/configapi/api_sub_config.go
+index 6c2c038..7db20b0 100644
+--- a/configapi/api_sub_config.go
++++ b/configapi/api_sub_config.go
+@@ -275,15 +275,18 @@ func GetSubscribers(c *gin.Context) {
+ 
+ 	logger.WebUILog.Infoln("Get All Subscribers List")
+ 
+-	var subsList []configmodels.SubsListIE = make([]configmodels.SubsListIE, 0)
++	var subsList []configmodels.SubsListIE
+ 	amDataList := MongoDBLibrary.RestfulAPIGetMany(amDataColl, bson.M{})
+ 	for _, amData := range amDataList {
+-		ueId := amData["ueId"]
+-		servingPlmnId := amData["servingPlmnId"]
++
+ 		tmp := configmodels.SubsListIE{
+-			PlmnID: servingPlmnId.(string),
+-			UeId:   ueId.(string),
++		    UeId: amData["ueID"].(string),
++		}
++
++		if servingPlmnId, plmnIdExists := amData["servingPlmnId"]; plmnIdExists {
++			tmp.PlmnID = servingPlmnId.(string)
+ 		}
++
+ 		subsList = append(subsList, tmp)
+ 	}
+ 
+diff --git a/proto/server/configEvtHandler.go b/proto/server/configEvtHandler.go
+index be8375e..fe34d81 100644
+--- a/proto/server/configEvtHandler.go
++++ b/proto/server/configEvtHandler.go
+@@ -89,6 +89,7 @@ func configHandler(configMsgChan chan *configmodels.ConfigMessage, configReceive
+ 				imsiData[imsiVal] = configMsg.AuthSubData
+ 				rwLock.Unlock()
+ 				configLog.Infof("Received Imsi [%v] configuration from config channel", configMsg.Imsi)
++				handleSubscriberPost(configMsg)
+ 				if factory.WebUIConfig.Configuration.Mode5G == true {
+ 					var configUMsg Update5GSubscriberMsg
+ 					configUMsg.Msg = configMsg
+@@ -163,6 +164,17 @@ func configHandler(configMsgChan chan *configmodels.ConfigMessage, configReceive
+ 	}
+ }
+ 
++func handleSubscriberPost(configMsg *configmodels.ConfigMessage) {
++	rwLock.Lock()
++	basicAmData := map[string]interface{}{
++        "ueId": configMsg.Imsi,
++    }
++	filter := bson.M{"ueId": configMsg.Imsi}
++	basicDataBson := toBsonM(basicAmData)
++	RestfulAPIPost(amDataColl, filter, basicDataBson)
++	rwLock.Unlock()
++}
++
+ func handleDeviceGroupPost(configMsg *configmodels.ConfigMessage, subsUpdateChan chan *Update5GSubscriberMsg) {
+ 	rwLock.Lock()
+ 	if factory.WebUIConfig.Configuration.Mode5G == true {
+@@ -338,7 +350,13 @@ func updateAmProviosionedData(snssai *models.Snssai, qos *configmodels.DeviceGro
+ 	amDataBsonA := toBsonM(amData)
+ 	amDataBsonA["ueId"] = "imsi-" + imsi
+ 	amDataBsonA["servingPlmnId"] = mcc + mnc
+-	filter := bson.M{"ueId": "imsi-" + imsi, "servingPlmnId": mcc + mnc}
++	filter := bson.M{
++		"ueId": "imsi-" + imsi,
++		"$or": []bson.M{
++			{"servingPlmnId": mcc + mnc},
++			{"servingPlmnId": bson.M{"$exists": false}},
++		},
++	}
+ 	RestfulAPIPost(amDataColl, filter, amDataBsonA)
+ }
+ 
+@@ -414,6 +432,7 @@ func isDeviceGroupExistInSlice(msg *Update5GSubscriberMsg) *configmodels.Slice {
+ func getAddedGroupsList(slice, prevSlice *configmodels.Slice) (names []string) {
+ 	return getDeleteGroupsList(prevSlice, slice)
+ }
++
+ func getDeleteGroupsList(slice, prevSlice *configmodels.Slice) (names []string) {
+ 	for prevSlice == nil {
+ 		return
+@@ -440,6 +459,7 @@ func getDeleteGroupsList(slice, prevSlice *configmodels.Slice) (names []string)
+ 
+ 	return
+ }
++
+ func Config5GUpdateHandle(confChan chan *Update5GSubscriberMsg) {
+ 	for confData := range confChan {
+ 		switch confData.Msg.MsgType {
+@@ -456,6 +476,7 @@ func Config5GUpdateHandle(confChan chan *Update5GSubscriberMsg) {
+ 			} else {
+ 				filter := bson.M{"ueId": "imsi-" + imsi}
+ 				RestfulAPIDeleteOne(authSubsDataColl, filter)
++				RestfulAPIDeleteOne(amDataColl, filter)
+ 			}
+ 			rwLock.RUnlock()
+ 
+diff --git a/proto/server/configEvtHandler_test.go b/proto/server/configEvtHandler_test.go
+index 9901440..b283bb1 100644
+--- a/proto/server/configEvtHandler_test.go
++++ b/proto/server/configEvtHandler_test.go
+@@ -272,3 +272,30 @@ func Test_handleNetworkSlicePost_alreadyExists(t *testing.T) {
+ 		}
+ 	}
+ }
++
++func Test_handleSubscriberPost(* testing.T) {
++	imsi := "1234"
++	factory.WebUIConfig.Configuration.Mode5G = true
++	configMsg := configmodels.ConfigMessage{
++		MsgType: configmodels.Sub_data,
++		Imsi:   imsi,
++	}
++
++	postData = make([]map[string]interface{}, 0)
++	handleSubscriberPost(&configMsg)
++
++	expected_collection := "subscriptionData.provisionedData.amData"
++	if postData[0]["coll"] != expected_collection {
++		t.Errorf("Expected collection %v, got %v", expected_collection, postData[0]["coll"])
++	}
++
++	expected_filter := bson.M{"ueId": imsi}
++	if !reflect.DeepEqual(postData[0]["filter"], expected_filter) {
++		t.Errorf("Expected filter %v, got %v", expected_filter, postData[0]["filter"])
++	}
++
++	var result map[string]interface{} = postData[0]["data"].(map[string]interface{})
++	if result["ueId"] != imsi {
++		t.Errorf("Expected ueId %v, got %v", imsi, result["ueId"])
++	}
++}
+\ No newline at end of file
