@@ -16,7 +16,7 @@ index 6c2c038..7db20b0 100644
  		tmp := configmodels.SubsListIE{
 -			PlmnID: servingPlmnId.(string),
 -			UeId:   ueId.(string),
-+		    UeId: amData["ueID"].(string),
++		    UeId: amData["ueId"].(string),
 +		}
 +
 +		if servingPlmnId, plmnIdExists := amData["servingPlmnId"]; plmnIdExists {
