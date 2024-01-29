@@ -14,15 +14,10 @@ parts:
     plugin: go
     source: https://github.com/omec-project/webconsole.git
     source-type: git
-    source-commit: a21ec74683b7c1acf05366575f19c4102c54b9a2
+    source-commit: ef2c57efb455e5a6c1c8e36e432aabc6724bdc8b
     build-snaps:
       - go/1.21/stable
     stage-packages:
       - libc6_libs
     organize:
       bin/cmd: bin/webui
-    override-pull: |
-      craftctl default
-      git apply ${CRAFT_PROJECT_DIR}/patches/01-bump-dependencies.patch
-      git apply ${CRAFT_PROJECT_DIR}/patches/02-add-subs-to-db-when-posted.patch
-      git apply ${CRAFT_PROJECT_DIR}/patches/03-fix-first-config-from-db.patch
