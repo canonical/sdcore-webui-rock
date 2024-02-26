@@ -14,7 +14,7 @@ parts:
     plugin: go
     source: https://github.com/omec-project/webconsole.git
     source-type: git
-    source-commit: ef2c57efb455e5a6c1c8e36e432aabc6724bdc8b
+    source-commit: 4f6fddc297b8400203553fd6d0012f449fc70398
     build-snaps:
       - go/1.21/stable
     stage-packages:
