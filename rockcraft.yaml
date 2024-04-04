@@ -1,7 +1,7 @@
 name: sdcore-webui
 base: bare
 build-base: ubuntu@22.04
-version: '1.3'
+version: '1.4.0'
 summary: SD-Core webui
 description: SD-Core webui
 license: Apache-2.0
@@ -14,7 +14,7 @@ parts:
     plugin: go
     source: https://github.com/omec-project/webconsole.git
     source-type: git
-    source-commit: 4f6fddc297b8400203553fd6d0012f449fc70398
+    source-tag: v1.4.0
     build-snaps:
       - go/1.21/stable
     stage-packages:
