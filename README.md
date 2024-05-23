@@ -1,4 +1,4 @@
-# SD-Core webui ROCK
+# SD-Core webui rock
 
 Container image for SD-Core webui.
 
