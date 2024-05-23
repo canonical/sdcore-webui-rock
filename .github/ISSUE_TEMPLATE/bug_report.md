@@ -28,7 +28,7 @@ assignees: ''
 
 #### Environment
 
-- ROCK version (if relevant): <!-- e.g. 1.2 -->
+- Rock version (if relevant): <!-- e.g. 1.2 -->
 - Juju version (output from `juju --version`):
 - Cloud Environment: <!-- e.g. GKE -->
 - Kubernetes version (output from `kubectl version --short`):
