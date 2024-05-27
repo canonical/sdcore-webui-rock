@@ -1,6 +1,6 @@
 name: sdcore-webui
 base: bare
-build-base: ubuntu@22.04
+build-base: ubuntu@24.04
 version: '1.4.0'
 summary: SD-Core webui
 description: SD-Core webui
@@ -19,5 +19,6 @@ parts:
       - go/1.21/stable
     stage-packages:
       - libc6_libs
+      - base-files_lib
     organize:
       bin/cmd: bin/webui
